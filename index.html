@@ -95,10 +95,12 @@
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
   }
-  .zonas-bar .wrap { display: flex; align-items: center; gap: 16px; padding-top: 12px; padding-bottom: 12px; }
+  .zonas-bar .wrap { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
+  .filtro-fila { display: flex; align-items: center; gap: 14px; }
   .zonas-label {
-    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
     color: var(--ink-soft); font-weight: 600; flex: none;
+    min-width: 72px;
   }
   .zonas {
     display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
@@ -115,6 +117,10 @@
   .zona-btn:hover { color: var(--buga); border-color: var(--buga); }
   .zona-btn[aria-pressed="true"] {
     color: #fff; background: var(--ink); border-color: var(--ink); font-weight: 600;
+  }
+  .plan-btn:hover { color: var(--jade); border-color: var(--jade); }
+  .plan-btn[aria-pressed="true"] {
+    color: #fff; background: var(--jade); border-color: var(--jade); font-weight: 600;
   }
   .zona-btn .cuenta { opacity: .55; margin-left: 6px; font-variant-numeric: tabular-nums; }
 
@@ -250,10 +256,16 @@
   <div class="credits">Curada obsesivamente y sin comité por <b id="curador">K</b> · tú solo escoge tus favoritos ❤︎</div>
 </header>
 
-<nav class="zonas-bar" aria-label="Filtrar por ubicación">
+<nav class="zonas-bar" aria-label="Filtros">
   <div class="wrap">
-    <span class="zonas-label">Ubicación</span>
-    <div class="zonas" id="zonas"></div>
+    <div class="filtro-fila">
+      <span class="zonas-label">Ubicación</span>
+      <div class="zonas" id="zonas"></div>
+    </div>
+    <div class="filtro-fila">
+      <span class="zonas-label">Plan</span>
+      <div class="zonas" id="planes"></div>
+    </div>
   </div>
 </nav>
 
@@ -421,6 +433,21 @@ const SECCIONES = [
     ]
   },
   {
+    seccion: "Tacos",
+    zona: "Tacubaya",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "El Borrego Viudo",
+        meta: "Tacubaya · Tacos",
+        nota: "Sobre Av. Revolución, abiertos hasta la madrugada. La parada obligada después de la fiesta: tacos al pastor y de cabeza que curan todo.",
+        tags: ["Favorito absoluto", "Madrugada", "Al pastor"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=El+Borrego+Viudo+Av+Revoluci%C3%B3n"
+      }
+    ]
+  },
+  {
     seccion: "Antros",
     zona: "CDMX",
     lugares: [
@@ -447,6 +474,15 @@ const SECCIONES = [
         tags: ["Favorito absoluto", "Saludable", "Mañanas"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9+Vegetal+Coyoac%C3%A1n"
+      },
+      {
+        rank: 2,
+        nombre: "Maque",
+        meta: "San Ángel · Desayunos & pan",
+        nota: "Clásico para desayunar en San Ángel. El pan dulce recién hecho y el chocolate caliente son obligatorios.",
+        tags: ["Pan dulce", "Clásico", "Mañanas"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9+Maque+San+%C3%81ngel"
       }
     ]
   },
@@ -513,7 +549,8 @@ const getZona = (l) => {
   return (typeof ZONA_ALIAS !== "undefined" && ZONA_ALIAS[raw]) || raw;
 };
 const ZONA_ORDEN = ["Coyoacán", "San Ángel", "Roma / Tacubaya / Juárez", "Del Valle"]; // orden preferido
-let FILTRO = "Todos";
+let FILTRO = "Todos";   // ubicación seleccionada
+let PLAN   = "Todos";   // tipo de plan seleccionado (nombre de la sección)
 
 function zonasDisponibles() {
   const set = [];
@@ -523,22 +560,37 @@ function zonasDisponibles() {
     return (ia<0?99:ia) - (ib<0?99:ib);
   });
 }
-function contarZona(z) {
-  return SECCIONES.reduce((n,s)=>n + s.lugares.filter(l=>getZona(l)===z).length, 0);
-}
+
+const matchZona = (l) => FILTRO === "Todos" || getZona(l) === FILTRO;
+const matchPlan = (s) => PLAN === "Todos" || s.seccion === PLAN;
+
+/* Los contadores respetan el OTRO filtro activo, para que siempre reflejen
+   lo que verías al combinar ambos. */
+function contarZona(z)  { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.filter(l=>getZona(l)===z).length : 0), 0); }
+function totalZonas()   { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.length : 0), 0); }
+function contarPlan(s)  { return s.lugares.filter(matchZona).length; }
+function totalPlanes()  { return SECCIONES.reduce((n,s)=> n + s.lugares.filter(matchZona).length, 0); }
 
 function renderTabs() {
-  const total = SECCIONES.reduce((n,s)=>n+s.lugares.length,0);
-  const tabs = [["Todos", total], ...zonasDisponibles().map(z => [z, contarZona(z)])];
-  const el = document.getElementById("zonas");
-  el.innerHTML = tabs.map(([z,n]) =>
+  // ---- Ubicación ----
+  const zTabs = [["Todos", totalZonas()], ...zonasDisponibles().map(z => [z, contarZona(z)])];
+  const zEl = document.getElementById("zonas");
+  zEl.innerHTML = zTabs.map(([z,n]) =>
     `<button class="zona-btn" data-zona="${escapeAttr(z)}" aria-pressed="${z===FILTRO}">${escapeHtml(z)}<span class="cuenta">${n}</span></button>`
   ).join("");
-  el.querySelectorAll(".zona-btn").forEach(b => b.addEventListener("click", () => setFilter(b.dataset.zona)));
+  zEl.querySelectorAll(".zona-btn").forEach(b => b.addEventListener("click", () => setFiltro("zona", b.dataset.zona)));
+
+  // ---- Tipo de plan ----
+  const pTabs = [["Todos", totalPlanes()], ...SECCIONES.map(s => [s.seccion, contarPlan(s)])];
+  const pEl = document.getElementById("planes");
+  pEl.innerHTML = pTabs.map(([p,n]) =>
+    `<button class="zona-btn plan-btn" data-plan="${escapeAttr(p)}" aria-pressed="${p===PLAN}">${escapeHtml(p)}<span class="cuenta">${n}</span></button>`
+  ).join("");
+  pEl.querySelectorAll(".plan-btn").forEach(b => b.addEventListener("click", () => setFiltro("plan", b.dataset.plan)));
 }
 
-function setFilter(z) {
-  FILTRO = z;
+function setFiltro(tipo, valor) {
+  if (tipo === "zona") FILTRO = valor; else PLAN = valor;
   renderTabs();
   render();
 }
@@ -549,10 +601,10 @@ function render() {
   let visibles = 0;
 
   app.innerHTML = SECCIONES.map((sec) => {
-    let lugares = [...sec.lugares];
-    if (FILTRO !== "Todos") lugares = lugares.filter(l => getZona(l) === FILTRO);
+    if (!matchPlan(sec)) return "";
+    let lugares = sec.lugares.filter(matchZona);
     if (!lugares.length) return "";
-    lugares.sort((a,b)=>(a.rank||99)-(b.rank||99));
+    lugares = lugares.slice().sort((a,b)=>(a.rank||99)-(b.rank||99));
     visibles++;
 
     const first = lugares[0];
@@ -597,8 +649,10 @@ function render() {
 
   if (!visibles) {
     app.innerHTML = `<section class="seccion" style="text-align:center;padding:80px 0;color:var(--ink-soft)">
-      <p class="display" style="font-size:26px;color:var(--ink)">Nada por aquí… todavía.</p>
-      <p>No tengo favoritos en esta zona. Prueba otra ubicación.</p></section>`;
+      <p class="display" style="font-size:26px;color:var(--ink)">Nada con esa combinación… todavía.</p>
+      <p>Prueba con otra ubicación o tipo de plan.</p>
+      <button class="zona-btn" style="margin-top:16px" onclick="setFiltro('zona','Todos');setFiltro('plan','Todos')">Quitar filtros</button>
+    </section>`;
   }
 
   document.getElementById("curador").textContent = CURADOR;
