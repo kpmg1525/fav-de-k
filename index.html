@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>La Guía · Lugares que apruebo</title>
+<style>
+  /* ============================================================
+     PALETA — buganvilia + tinta aubergine + jade + oro (para el N.º1)
+     ============================================================ */
+  :root {
+    --paper:      #FBF5F3;   /* papel rosado cálido */
+    --paper-2:    #F3E9E6;   /* tarjetas */
+    --ink:        #241A22;   /* tinta casi negra con tinte ciruela */
+    --ink-soft:   #6E5E67;   /* texto secundario */
+    --line:       #E2D2CD;   /* líneas finas */
+    --buga:       #C21E6E;   /* acento buganvilia */
+    --buga-deep:  #97124F;
+    --jade:       #1F6E56;   /* secundario tranquilo */
+    --gold:       #B08319;   /* reservado SOLO para el N.º 1 */
+    --gold-soft:  #E7D9A8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:    #1A1218;
+      --paper-2:  #241823;
+      --ink:      #F6ECEF;
+      --ink-soft: #B79CA9;
+      --line:     #3A2A34;
+      --buga:     #F25AA0;
+      --buga-deep:#F887BB;
+      --jade:     #5FC7A3;
+      --gold:     #E7C766;
+      --gold-soft:#4A3C1A;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper:#FBF5F3; --paper-2:#F3E9E6; --ink:#241A22; --ink-soft:#6E5E67;
+    --line:#E2D2CD; --buga:#C21E6E; --buga-deep:#97124F; --jade:#1F6E56;
+    --gold:#B08319; --gold-soft:#E7D9A8;
+  }
+  :root[data-theme="dark"] {
+    --paper:#1A1218; --paper-2:#241823; --ink:#F6ECEF; --ink-soft:#B79CA9;
+    --line:#3A2A34; --buga:#F25AA0; --buga-deep:#F887BB; --jade:#5FC7A3;
+    --gold:#E7C766; --gold-soft:#4A3C1A;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .display {
+    font-family: "Didot", "Bodoni 72", "Playfair Display", Georgia, "Times New Roman", serif;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 22px; }
+
+  /* ---------- MASTHEAD ---------- */
+  header.masthead {
+    text-align: center;
+    padding: 68px 22px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-size: 12px; letter-spacing: .32em; text-transform: uppercase;
+    color: var(--buga); font-weight: 600;
+  }
+  .masthead h1 {
+    font-size: clamp(52px, 13vw, 128px);
+    line-height: .9; margin: .18em 0 .12em;
+    font-weight: 400; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .masthead h1 em { font-style: italic; color: var(--buga); }
+  .tagline {
+    font-size: clamp(16px, 2.4vw, 21px); color: var(--ink-soft);
+    max-width: 34ch; margin: 6px auto 0; text-wrap: balance;
+  }
+  .credits {
+    margin-top: 22px; font-size: 12.5px; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .credits b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- BARRA DE UBICACIÓN (filtro lateral) ---------- */
+  .zonas-bar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .zonas-bar .wrap { display: flex; align-items: center; gap: 16px; padding-top: 12px; padding-bottom: 12px; }
+  .zonas-label {
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 600; flex: none;
+  }
+  .zonas {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch; padding-bottom: 2px;
+  }
+  .zonas::-webkit-scrollbar { display: none; }
+  .zona-btn {
+    flex: none; cursor: pointer; font-family: inherit;
+    font-size: 13px; letter-spacing: .04em;
+    color: var(--ink-soft); background: transparent;
+    border: 1px solid var(--line); border-radius: 100px;
+    padding: 7px 16px; white-space: nowrap; transition: all .15s;
+  }
+  .zona-btn:hover { color: var(--buga); border-color: var(--buga); }
+  .zona-btn[aria-pressed="true"] {
+    color: #fff; background: var(--ink); border-color: var(--ink); font-weight: 600;
+  }
+  .zona-btn .cuenta { opacity: .55; margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+  /* ---------- SECCIÓN ---------- */
+  section.seccion { padding: 54px 0 8px; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 28px; }
+  .sec-num {
+    font-family: "Didot","Bodoni 72",Georgia,serif;
+    font-size: 15px; color: var(--buga); font-variant-numeric: tabular-nums;
+    border: 1px solid var(--buga); border-radius: 50%;
+    width: 34px; height: 34px; flex: none;
+    display: grid; place-items: center;
+  }
+  .sec-head h2 {
+    font-size: clamp(26px, 5vw, 40px); margin: 0; font-weight: 400;
+    letter-spacing: -.01em; line-height: 1;
+  }
+  .sec-head .zona {
+    margin-left: auto; font-size: 12px; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--ink-soft); align-self: center;
+  }
+
+  /* ---------- TARJETA #1 (el favorito) ---------- */
+  .featured {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 0;
+    background: var(--paper-2); border: 1px solid var(--line);
+    border-radius: 4px; overflow: hidden; margin-bottom: 26px;
+    position: relative;
+  }
+  .featured .foto { min-height: 320px; }
+  .featured .cuerpo { padding: 34px 34px 30px; display: flex; flex-direction: column; }
+  .num1-badge {
+    display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase; font-weight: 700;
+    color: var(--gold); border: 1px solid var(--gold); border-radius: 100px;
+    padding: 5px 13px; margin-bottom: 16px;
+  }
+  .num1-badge svg { width: 14px; height: 14px; fill: var(--gold); }
+  .featured h3 { font-size: clamp(30px, 5vw, 46px); }
+
+  /* ---------- GRID DE LOS DEMÁS ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 20px; margin-bottom: 12px; }
+  .card {
+    background: var(--paper-2); border: 1px solid var(--line);
+    border-radius: 4px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card .foto { aspect-ratio: 4 / 3; }
+  .card .cuerpo { padding: 18px 18px 16px; display: flex; flex-direction: column; flex: 1; }
+
+  /* piezas comunes */
+  h3 { font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;
+       margin: 0 0 6px; font-weight: 400; letter-spacing: -.01em; line-height: 1.02;
+       text-wrap: balance; }
+  .card h3 { font-size: 24px; }
+  .meta { font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--jade); font-weight: 600; margin-bottom: 10px; }
+  .nota { color: var(--ink-soft); font-size: 15px; margin: 0 0 16px; }
+  .featured .nota { font-size: 16.5px; max-width: 42ch; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .tag { font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+         color: var(--buga); border: 1px solid var(--line); border-radius: 100px; padding: 3px 10px; }
+  .row-bottom { margin-top: auto; display: flex; align-items: center; gap: 12px; }
+
+  /* botón mapa */
+  .mapa {
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600;
+    color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--buga);
+    padding-bottom: 1px; transition: color .15s;
+  }
+  .mapa:hover { color: var(--buga); }
+
+  /* corazón "yo le entro" */
+  .fav {
+    margin-left: auto; background: none; border: 1px solid var(--line);
+    border-radius: 100px; cursor: pointer; color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    font-family: inherit; font-size: 12px; letter-spacing: .1em; text-transform: uppercase;
+    transition: all .15s;
+  }
+  .fav svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; transition: transform .15s; }
+  .fav:hover { color: var(--buga); border-color: var(--buga); }
+  .fav[aria-pressed="true"] { color: #fff; background: var(--buga); border-color: var(--buga); }
+  .fav[aria-pressed="true"] svg { fill: #fff; stroke: #fff; transform: scale(1.05); }
+  :root[data-theme="dark"] .fav[aria-pressed="true"], @media (prefers-color-scheme: dark) { }
+
+  /* foto: imagen + placeholder detrás */
+  .foto { position: relative; background: linear-gradient(135deg, var(--buga-deep), var(--jade)); }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
+  .foto .ph {
+    position: absolute; inset: 0; z-index: 0; display: grid; place-items: center; text-align: center;
+    color: #fff; padding: 20px;
+  }
+  .foto .ph span { font-family:"Didot",Georgia,serif; font-size: 18px; opacity: .9; }
+  .foto .ph small { display:block; font-size: 11px; letter-spacing:.14em; text-transform:uppercase; opacity:.65; margin-top:6px; }
+
+  /* ---------- BARRA FLOTANTE (conteo de escogidos) ---------- */
+  .tally {
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--paper);
+    padding: 11px 20px; border-radius: 100px; font-size: 13px;
+    letter-spacing: .06em; box-shadow: 0 8px 30px rgba(0,0,0,.28);
+    display: flex; align-items: center; gap: 12px; z-index: 50;
+    opacity: 0; transform: translate(-50%, 16px); pointer-events: none; transition: all .28s ease;
+  }
+  .tally.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .tally b { color: var(--buga-deep); font-weight: 700; }
+  :root[data-theme="dark"] .tally b, .tally b { color: #F25AA0; }
+  .tally button {
+    background: none; border: 1px solid rgba(255,255,255,.3); color: var(--paper);
+    border-radius: 100px; padding: 4px 12px; font-family: inherit; font-size: 12px;
+    cursor: pointer; letter-spacing: .08em;
+  }
+  .tally button:hover { border-color: var(--paper); }
+
+  footer { text-align: center; padding: 60px 22px 120px; color: var(--ink-soft); font-size: 14px; }
+  footer .display { font-size: 22px; color: var(--ink); display: block; margin-bottom: 6px; }
+
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--buga); outline-offset: 3px; border-radius: 4px; }
+
+  @media (max-width: 720px) {
+    .featured { grid-template-columns: 1fr; }
+    .featured .foto { min-height: 240px; aspect-ratio: 4/3; }
+    .sec-head .zona { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="eyebrow">Colección privada · Ciudad de México · MMXXVI</div>
+  <h1 class="display">Fav de <em>K</em></h1>
+  <p class="tagline">Una curaduría rigurosa y absolutamente subjetiva.</p>
+  <div class="credits">Curada obsesivamente y sin comité por <b id="curador">K</b> · tú solo escoge tus favoritos ❤︎</div>
+</header>
+
+<nav class="zonas-bar" aria-label="Filtrar por ubicación">
+  <div class="wrap">
+    <span class="zonas-label">Ubicación</span>
+    <div class="zonas" id="zonas"></div>
+  </div>
+</nav>
+
+<main class="wrap" id="app"></main>
+
+<div class="tally" id="tally">
+  <span>Ya escogiste <b id="tally-n">0</b></span>
+  <button id="tally-reset">reiniciar</button>
+</div>
+
+<footer>
+  <span class="display">Fin de la lista.</span>
+  Si no está aquí, es porque no me convenció. Sin rencores.
+</footer>
+
+<script>
+/* ============================================================================
+   👇👇👇  AQUÍ EDITAS TODO — no necesitas tocar nada más arriba  👇👇👇
+   ----------------------------------------------------------------------------
+   • Cada lugar es un { ... }. Copia y pega uno para agregar más.
+   • rank: 1  → sale GRANDE con corona dorada (el favorito de esa sección).
+           Solo UNO por sección debe ser rank 1. Los demás: 2, 3, 4...
+   • foto: pega el LINK DIRECTO de una imagen (que termine en .jpg/.png/.webp,
+           o link de Google Fotos/Drive público). Si lo dejas "" sale un
+           mosaico bonito con el nombre. (Truco: en Google Imágenes, clic
+           derecho sobre la foto → "Copiar dirección de la imagen").
+   • mapa: pega el link de Google Maps del lugar (o déjalo "").
+   • tags: etiquetas cortas. Ponle las que quieras o [].
+   • UBICACIÓN (filtro lateral de arriba): se toma AUTOMÁTICO de lo que va
+     ANTES del "·" en meta. Ej. meta:"Coyoacán · Sushi" → zona "Coyoacán".
+     Escríbela IGUALITO en todos (mismos acentos) para que se agrupen bien.
+   ============================================================================ */
+
+const CURADOR = "K"; // ← tu nombre en los créditos
+
+// ¿Quieres que dos colonias compartan el MISMO botón de filtro? Agrúpalas aquí.
+// A la izquierda va la colonia (tal como la escribes en meta); a la derecha el
+// nombre del grupo que se muestra en el filtro. (La tarjeta sigue mostrando la
+// colonia real.) Deja {} si no quieres agrupar nada.
+const ZONA_ALIAS = {
+  "Roma Norte": "Roma / Tacubaya / Juárez",
+  "Tacubaya":   "Roma / Tacubaya / Juárez",
+  "Juárez":     "Roma / Tacubaya / Juárez"
+};
+
+const SECCIONES = [
+  {
+    seccion: "Drinks",
+    zona: "Coyoacán · San Ángel",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "Madre Cuixtle",
+        meta: "Coyoacán · Mezcal & cócteles",
+        nota: "Mi lugar favorito para unos drinks. Coyoacán, buen mezcal y el ambiente perfecto. Aquí caigo siempre.",
+        tags: ["Favorito absoluto", "Mezcal", "Cócteles"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Madre+Cuixtle+Coyoac%C3%A1n"
+      },
+      {
+        rank: 2,
+        nombre: "El Compa de Jalisco",
+        meta: "San Ángel · Cantina",
+        nota: "Para cuando el plan se mueve a San Ángel. Buen ambiente y tragos sin complicarse.",
+        tags: ["Cantina", "Tequila"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=El+Compa+de+Jalisco+San+%C3%81ngel"
+      },
+      {
+        rank: 3,
+        nombre: "El Mickey",
+        meta: "Tacubaya · Bar de barrio",
+        nota: "El antro de confianza jaja. Barato, sin pretensiones y a partir de la medianoche se prende el reggaetón. Buena noche asegurada.",
+        tags: ["Chelas", "Reggaetón a medianoche", "Sin filtro"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=El+Mickey+Tacubaya"
+      },
+      {
+        rank: 4,
+        nombre: "Tlecán",
+        meta: "Roma Norte · Mezcalería",
+        nota: "Mezcal artesanal de verdad, curado con cariño. De los mejores lugares para tomar mezcal en la ciudad.",
+        tags: ["Mezcal", "Coctelería"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Tlec%C3%A1n+Roma+Norte"
+      },
+      {
+        rank: 5,
+        nombre: "Beis con los Diablos Rojos",
+        meta: "Estadio GNP · Beis & chelas",
+        nota: "El plan menos esperado y de los mejores. Chelas, sol y a gritarle a los Diablos Rojos en el Estadio GNP.",
+        tags: ["Beis", "Chelas", "Plan diferente"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Estadio+Alfredo+Harp+Hel%C3%BA+GNP+Seguros"
+      },
+      {
+        rank: 6,
+        nombre: "Cantina La No. 20",
+        meta: "Coyoacán · Cantina",
+        nota: "Un oasis en Coyoacán. Cantina clásica, botana rica y tragos que se sienten como en casa.",
+        tags: ["Cantina", "Oasis", "Clásico"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Cantina+La+No.+20+Coyoac%C3%A1n"
+      },
+      {
+        rank: 7,
+        nombre: "Júpiter Cervecería",
+        meta: "San Ángel · Cervecería & mezcal",
+        nota: "En el Mercado del Carmen. Mezcales artesanales (pídelos por botellita) y la comida está deli. Plan redondo.",
+        tags: ["Mezcal artesanal", "Comida deli", "Mercado del Carmen"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=J%C3%BApiter+Cervecer%C3%ADa+Mercado+del+Carmen+San+%C3%81ngel"
+      }
+    ]
+  },
+  {
+    seccion: "Restaurantes",
+    zona: "Coyoacán · San Ángel",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "Corazón de Maguey",
+        meta: "Coyoacán · Mexicana & mezcal",
+        nota: "Sobre el Jardín Centenario, con la mejor vista de Coyoacán. Comida mexicana de verdad y mezcales que valen cada trago.",
+        tags: ["Favorito absoluto", "Mezcal", "Vista"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Coraz%C3%B3n+de+Maguey+Coyoac%C3%A1n"
+      },
+      {
+        rank: 2,
+        nombre: "El Japonez",
+        meta: "Coyoacán · Japonés / Sushi",
+        nota: "Mi antojo asegurado cuando quiero sushi. Nunca decepciona.",
+        tags: ["Sushi", "Japonés"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=El+Japonez+Coyoac%C3%A1n"
+      },
+      {
+        rank: 3,
+        nombre: "Tori Tori",
+        meta: "San Ángel · Japonés / Sushi",
+        nota: "Sushi de otro nivel y un lugar precioso. Ideal para una cena que se sienta especial.",
+        tags: ["Sushi", "Japonés", "Cenas"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Tori+Tori+San+%C3%81ngel"
+      },
+      {
+        rank: 4,
+        nombre: "Alta Terra",
+        meta: "Coyoacán · Restaurante & terraza",
+        nota: "Terraza bonita para comer con calma. Buen ambiente y comida rica.",
+        tags: ["Terraza", "Ambiente"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Alta+Terra+Coyoac%C3%A1n"
+      },
+      {
+        rank: 5,
+        nombre: "Sonora Grill",
+        meta: "Narvarte · Cortes",
+        nota: "Cortes en su punto y un ambiente que siempre prende. Para cuando el antojo pide carne y buena noche.",
+        tags: ["Cortes", "Cenas", "Ambiente"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Sonora+Grill+Narvarte+Churubusco"
+      }
+    ]
+  },
+  {
+    seccion: "Antros",
+    zona: "CDMX",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "Cincodoce",
+        meta: "Juárez · Antro",
+        nota: "Puuufff, me mama. El que nunca falla para bailar hasta que cierren. Mi antro de cabecera.",
+        tags: ["Favorito absoluto", "Bailar", "Hasta el cierre"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Cincodoce+Florencia+41+Ju%C3%A1rez+CDMX"
+      }
+    ]
+  },
+  {
+    seccion: "Desayuno",
+    zona: "Coyoacán",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "Café Vegetal",
+        meta: "Coyoacán · Desayunos",
+        nota: "Mi favorito para empezar el día en Coyoacán. Rico, fresco y con opciones para todos.",
+        tags: ["Favorito absoluto", "Saludable", "Mañanas"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Caf%C3%A9+Vegetal+Coyoac%C3%A1n"
+      }
+    ]
+  },
+  {
+    seccion: "Cafés y postres",
+    zona: "Del Valle / Roma",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "El café que amo",
+        meta: "Roma Norte · Café de especialidad",
+        nota: "Mi oficina no oficial. Wifi, luz bonita y el mejor flat white de la zona.",
+        tags: ["Trabajar aquí", "Especialidad"],
+        foto: "",
+        mapa: ""
+      },
+      {
+        rank: 2,
+        nombre: "Postres imperdibles",
+        meta: "Del Valle · Repostería",
+        nota: "Vengo solo por el pan. No juzgues.",
+        tags: ["Dulce"],
+        foto: "",
+        mapa: ""
+      }
+    ]
+  }
+  /* ← ¿Quieres otra sección (Bares, Tacos, Museos...)? Copia un bloque
+       { seccion, zona, lugares:[...] } completo y pégalo aquí. */
+];
+
+/* ============================================================================
+   👆👆👆  HASTA AQUÍ EDITAS. De aquí para abajo es la maquinaria.  👆👆👆
+   ============================================================================ */
+
+const heart = '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.9-10-9.2C.3 8.4 2 5 5.3 5c2 0 3.4 1.2 4.2 2.5C10.3 6.2 11.7 5 13.7 5 17 5 18.7 8.4 17 11.8 14.5 16.1 12 21 12 21z"/></svg>';
+const crown = '<svg viewBox="0 0 24 24"><path d="M3 7l4 4 5-7 5 7 4-4-2 12H5L3 7z"/></svg>';
+
+const store = {
+  key: "guia-favs",
+  get() { try { return JSON.parse(localStorage.getItem(this.key)) || {}; } catch(e){ return {}; } },
+  set(v) { try { localStorage.setItem(this.key, JSON.stringify(v)); } catch(e){} }
+};
+
+function foto(l) {
+  const ph = `<div class="ph"><div><span>${escapeHtml(l.nombre)}</span><small>agrega tu foto aquí</small></div></div>`;
+  if (!l.foto) return `<div class="foto">${ph}</div>`;
+  return `<div class="foto">${ph}<img src="${escapeAttr(l.foto)}" alt="${escapeAttr(l.nombre)}" loading="lazy" onerror="this.style.display='none'"></div>`;
+}
+function tags(l) {
+  if (!l.tags || !l.tags.length) return "";
+  return `<div class="tags">${l.tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</div>`;
+}
+function mapa(l) {
+  return l.mapa ? `<a class="mapa" href="${escapeAttr(l.mapa)}" target="_blank" rel="noopener">Ver en mapa ↗</a>` : "";
+}
+function favBtn(id) {
+  return `<button class="fav" data-id="${escapeAttr(id)}" aria-pressed="false">${heart}<span>Yo le entro</span></button>`;
+}
+
+/* --- Ubicaciones: se derivan de lo que va antes del "·" en cada meta --- */
+const getZona = (l) => {
+  const raw = (l.meta || "").split("·")[0].trim() || "Otros";
+  return (typeof ZONA_ALIAS !== "undefined" && ZONA_ALIAS[raw]) || raw;
+};
+const ZONA_ORDEN = ["Coyoacán", "San Ángel", "Roma / Tacubaya / Juárez", "Del Valle"]; // orden preferido
+let FILTRO = "Todos";
+
+function zonasDisponibles() {
+  const set = [];
+  SECCIONES.forEach(s => s.lugares.forEach(l => { const z = getZona(l); if (!set.includes(z)) set.push(z); }));
+  return set.sort((a,b) => {
+    const ia = ZONA_ORDEN.indexOf(a), ib = ZONA_ORDEN.indexOf(b);
+    return (ia<0?99:ia) - (ib<0?99:ib);
+  });
+}
+function contarZona(z) {
+  return SECCIONES.reduce((n,s)=>n + s.lugares.filter(l=>getZona(l)===z).length, 0);
+}
+
+function renderTabs() {
+  const total = SECCIONES.reduce((n,s)=>n+s.lugares.length,0);
+  const tabs = [["Todos", total], ...zonasDisponibles().map(z => [z, contarZona(z)])];
+  const el = document.getElementById("zonas");
+  el.innerHTML = tabs.map(([z,n]) =>
+    `<button class="zona-btn" data-zona="${escapeAttr(z)}" aria-pressed="${z===FILTRO}">${escapeHtml(z)}<span class="cuenta">${n}</span></button>`
+  ).join("");
+  el.querySelectorAll(".zona-btn").forEach(b => b.addEventListener("click", () => setFilter(b.dataset.zona)));
+}
+
+function setFilter(z) {
+  FILTRO = z;
+  renderTabs();
+  render();
+}
+
+function render() {
+  const favs = store.get();
+  const app = document.getElementById("app");
+  let visibles = 0;
+
+  app.innerHTML = SECCIONES.map((sec) => {
+    let lugares = [...sec.lugares];
+    if (FILTRO !== "Todos") lugares = lugares.filter(l => getZona(l) === FILTRO);
+    if (!lugares.length) return "";
+    lugares.sort((a,b)=>(a.rank||99)-(b.rank||99));
+    visibles++;
+
+    const first = lugares[0];
+    const rest = lugares.slice(1);
+    const idOf = (l)=>`${sec.seccion}·${l.nombre}`;
+    const zonasSec = [...new Set(lugares.map(getZona))].join(" · ");
+
+    const featured = `
+      <article class="featured">
+        ${foto(first)}
+        <div class="cuerpo">
+          <span class="num1-badge">${crown} El favorito</span>
+          <h3 class="display">${escapeHtml(first.nombre)}</h3>
+          <div class="meta">${escapeHtml(first.meta||"")}</div>
+          <p class="nota">${escapeHtml(first.nota||"")}</p>
+          ${tags(first)}
+          <div class="row-bottom">${mapa(first)}${favBtn(idOf(first))}</div>
+        </div>
+      </article>`;
+
+    const grid = rest.length ? `<div class="grid">${rest.map((l)=>`
+      <article class="card">
+        ${foto(l)}
+        <div class="cuerpo">
+          <h3>${escapeHtml(l.nombre)}</h3>
+          <div class="meta">${escapeHtml(l.meta||"")}</div>
+          <p class="nota">${escapeHtml(l.nota||"")}</p>
+          ${tags(l)}
+          <div class="row-bottom">${mapa(l)}${favBtn(idOf(l))}</div>
+        </div>
+      </article>`).join("")}</div>` : "";
+
+    return `<section class="seccion">
+      <div class="sec-head">
+        <span class="sec-num display">${visibles}</span>
+        <h2 class="display">${escapeHtml(sec.seccion)}</h2>
+        <span class="zona">${escapeHtml(zonasSec)}</span>
+      </div>
+      ${featured}${grid}
+    </section>`;
+  }).join("");
+
+  if (!visibles) {
+    app.innerHTML = `<section class="seccion" style="text-align:center;padding:80px 0;color:var(--ink-soft)">
+      <p class="display" style="font-size:26px;color:var(--ink)">Nada por aquí… todavía.</p>
+      <p>No tengo favoritos en esta zona. Prueba otra ubicación.</p></section>`;
+  }
+
+  document.getElementById("curador").textContent = CURADOR;
+  document.querySelectorAll(".fav").forEach(b => {
+    if (favs[b.dataset.id]) { b.setAttribute("aria-pressed","true"); b.querySelector("span").textContent = "Le entras ✓"; }
+    b.addEventListener("click", () => toggle(b));
+  });
+  updateTally();
+}
+
+function toggle(btn) {
+  const favs = store.get();
+  const on = btn.getAttribute("aria-pressed") === "true";
+  if (on) { delete favs[btn.dataset.id]; btn.setAttribute("aria-pressed","false"); btn.querySelector("span").textContent="Yo le entro"; }
+  else { favs[btn.dataset.id] = true; btn.setAttribute("aria-pressed","true"); btn.querySelector("span").textContent="Le entras ✓"; }
+  store.set(favs);
+  updateTally();
+}
+
+function updateTally() {
+  const n = Object.keys(store.get()).length;
+  document.getElementById("tally-n").textContent = n;
+  document.getElementById("tally").classList.toggle("show", n > 0);
+}
+document.getElementById("tally-reset").addEventListener("click", () => { store.set({}); render(); });
+
+function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function escapeAttr(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+renderTabs();
+render();
+</script>
+</body>
+</html>
