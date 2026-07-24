@@ -236,6 +236,11 @@
 
   footer { text-align: center; padding: 60px 22px 120px; color: var(--ink-soft); font-size: 14px; }
   footer .display { font-size: 22px; color: var(--ink); display: block; margin-bottom: 6px; }
+  .visitas {
+    margin-top: 20px; display: none; font-size: 12.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--buga); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
 
   a:focus-visible, button:focus-visible { outline: 2px solid var(--buga); outline-offset: 3px; border-radius: 4px; }
 
@@ -279,6 +284,7 @@
 <footer>
   <span class="display">Fin de la lista.</span>
   Si no está aquí, es porque no me convenció. Sin rencores.
+  <div id="visitas" class="visitas"></div>
 </footer>
 
 <script>
@@ -365,19 +371,19 @@ const SECCIONES = [
         rank: 6,
         nombre: "Cantina La No. 20",
         meta: "Coyoacán · Cantina",
-        nota: "Un oasis en Coyoacán. Cantina clásica, botana rica y tragos que se sienten como en casa.",
-        tags: ["Cantina", "Oasis", "Clásico"],
+        nota: "En la Plaza Oasis Coyoacán. Buena vista, buen entretenimiento y buen ambiente. Cantina clásica que nunca falla.",
+        tags: ["Cantina", "Plaza Oasis", "Buen ambiente"],
         foto: "",
-        mapa: "https://www.google.com/maps/search/?api=1&query=Cantina+La+No.+20+Coyoac%C3%A1n"
+        mapa: "https://www.google.com/maps/search/?api=1&query=Cantina+La+No.+20+Plaza+Oasis+Coyoac%C3%A1n"
       },
       {
         rank: 7,
         nombre: "Júpiter Cervecería",
-        meta: "San Ángel · Cervecería & mezcal",
+        meta: "Coyoacán · Cervecería & mezcal",
         nota: "En el Mercado del Carmen. Mezcales artesanales (pídelos por botellita) y la comida está deli. Plan redondo.",
         tags: ["Mezcal artesanal", "Comida deli", "Mercado del Carmen"],
         foto: "",
-        mapa: "https://www.google.com/maps/search/?api=1&query=J%C3%BApiter+Cervecer%C3%ADa+Mercado+del+Carmen+San+%C3%81ngel"
+        mapa: "https://www.google.com/maps/search/?api=1&query=J%C3%BApiter+Cervecer%C3%ADa+Mercado+del+Carmen+Coyoac%C3%A1n"
       }
     ]
   },
@@ -386,20 +392,20 @@ const SECCIONES = [
     zona: "Coyoacán · San Ángel",
     lugares: [
       {
-        rank: 1,
+        rank: 2,
         nombre: "Corazón de Maguey",
         meta: "Coyoacán · Mexicana & mezcal",
         nota: "Sobre el Jardín Centenario, con la mejor vista de Coyoacán. Comida mexicana de verdad y mezcales que valen cada trago.",
-        tags: ["Favorito absoluto", "Mezcal", "Vista"],
+        tags: ["Mezcal", "Vista"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=Coraz%C3%B3n+de+Maguey+Coyoac%C3%A1n"
       },
       {
-        rank: 2,
+        rank: 1,
         nombre: "El Japonez",
         meta: "Coyoacán · Japonés / Sushi",
-        nota: "Mi antojo asegurado cuando quiero sushi. Nunca decepciona.",
-        tags: ["Sushi", "Japonés"],
+        nota: "Mi antojo asegurado cuando quiero sushi. Nunca decepciona, y los drinks están buenos.",
+        tags: ["Favorito absoluto", "Sushi", "Buenos drinks"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=El+Japonez+Coyoac%C3%A1n"
       },
@@ -682,8 +688,24 @@ document.getElementById("tally-reset").addEventListener("click", () => { store.s
 function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 function escapeAttr(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
+/* --- Contador de visitas (servicio gratuito Abacus, sin cuenta) --- */
+const CONTADOR = { ns: "favdek-kpmg1525", key: "home" }; // identificador único de tu página
+async function mostrarVisitas() {
+  const el = document.getElementById("visitas");
+  try {
+    const yaConto = sessionStorage.getItem("fdk-conto");
+    const accion = yaConto ? "get" : "hit"; // "hit" suma 1; "get" solo lee
+    const r = await fetch(`https://abacus.jasoncameron.dev/${accion}/${CONTADOR.ns}/${CONTADOR.key}`);
+    const d = await r.json();
+    if (!yaConto) sessionStorage.setItem("fdk-conto", "1");
+    el.textContent = `👀 ${Number(d.value).toLocaleString("es-MX")} visitas`;
+    el.style.display = "block";
+  } catch (e) { /* si el servicio falla, simplemente no se muestra */ }
+}
+
 renderTabs();
 render();
+mostrarVisitas();
 </script>
 </body>
 </html>
