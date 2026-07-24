@@ -183,6 +183,15 @@
          color: var(--buga); border: 1px solid var(--line); border-radius: 100px; padding: 3px 10px; }
   .row-bottom { margin-top: auto; display: flex; align-items: center; gap: 12px; }
 
+  /* etiqueta "en mi radar" (lugares por visitar) */
+  .radar {
+    display: inline-block; align-self: flex-start; margin-bottom: 9px;
+    font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700;
+    color: var(--jade); border: 1px dashed var(--jade); border-radius: 100px; padding: 3px 11px;
+  }
+  .card-radar { border-style: dashed; }
+  .card-radar .foto { filter: saturate(.85); }
+
   /* botón mapa */
   .mapa {
     font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600;
@@ -214,6 +223,50 @@
   }
   .foto .ph span { font-family:"Didot",Georgia,serif; font-size: 18px; opacity: .9; }
   .foto .ph small { display:block; font-size: 11px; letter-spacing:.14em; text-transform:uppercase; opacity:.65; margin-top:6px; }
+
+  /* ---------- PANTALLA DE BIENVENIDA ---------- */
+  .entrada {
+    position: fixed; inset: 0; z-index: 200; background: var(--paper);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; text-align: center; padding: 24px;
+    transition: opacity .5s ease;
+  }
+  .entrada.oculto { opacity: 0; pointer-events: none; }
+  .entrada-title { font-size: clamp(56px, 15vw, 120px); font-weight: 400; margin: 4px 0; line-height: .9; }
+  .entrada-title em { font-style: italic; color: var(--buga); }
+  .entrada-sub { color: var(--ink-soft); max-width: 30ch; margin: 0 0 14px; }
+  .entrada-btn {
+    display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
+    background: var(--buga); color: #fff; border: none; font-family: inherit;
+    font-size: 15px; letter-spacing: .04em; padding: 15px 30px; border-radius: 100px;
+    box-shadow: 0 10px 34px rgba(194,30,110,.35); transition: transform .15s;
+  }
+  .entrada-btn:hover { transform: translateY(-2px); }
+  .entrada-btn .note { font-size: 18px; }
+  .entrada-link {
+    background: none; border: none; cursor: pointer; color: var(--ink-soft);
+    font-family: inherit; font-size: 13px; letter-spacing: .08em; text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .entrada-link:hover { color: var(--buga); }
+
+  /* ---------- REPRODUCTOR DE MÚSICA (flotante) ---------- */
+  .player { position: fixed; left: 16px; bottom: 18px; z-index: 55; }
+  .player-toggle {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    background: var(--ink); color: var(--paper); border: none;
+    font-family: inherit; font-size: 13px; letter-spacing: .06em;
+    padding: 11px 18px; border-radius: 100px; box-shadow: 0 8px 30px rgba(0,0,0,.28);
+  }
+  .player-toggle .note { color: var(--buga); font-size: 16px; line-height: 1; }
+  :root[data-theme="dark"] .player-toggle .note { color: #F25AA0; }
+  .player-body {
+    position: absolute; bottom: 54px; left: 0;
+    width: min(320px, calc(100vw - 32px));
+    background: var(--paper-2); border: 1px solid var(--line);
+    border-radius: 14px; padding: 8px; box-shadow: 0 12px 40px rgba(0,0,0,.3);
+  }
+  .player-body iframe { display: block; }
 
   /* ---------- BARRA FLOTANTE (conteo de escogidos) ---------- */
   .tally {
@@ -254,6 +307,14 @@
 </head>
 <body>
 
+<div class="entrada" id="entrada">
+  <div class="eyebrow">Colección privada · Ciudad de México</div>
+  <h2 class="entrada-title display">Fav de <em>K</em></h2>
+  <p class="entrada-sub">Una curaduría rigurosa y absolutamente subjetiva.</p>
+  <button class="entrada-btn" id="entrar-musica"><span class="note">♫</span> Entrar con música</button>
+  <button class="entrada-link" id="entrar-mudo">entrar sin música</button>
+</div>
+
 <header class="masthead">
   <div class="eyebrow">Colección privada · Ciudad de México · MMXXVI</div>
   <h1 class="display">Fav de <em>K</em></h1>
@@ -275,6 +336,15 @@
 </nav>
 
 <main class="wrap" id="app"></main>
+
+<div class="player" id="player">
+  <button class="player-toggle" id="player-toggle" aria-expanded="false" aria-controls="player-body">
+    <span class="note">♫</span> Música
+  </button>
+  <div class="player-body" id="player-body" hidden>
+    <div id="spotify-embed"></div>
+  </div>
+</div>
 
 <div class="tally" id="tally">
   <span>Ya escogiste <b id="tally-n">0</b></span>
@@ -300,6 +370,9 @@
            derecho sobre la foto → "Copiar dirección de la imagen").
    • mapa: pega el link de Google Maps del lugar (o déjalo "").
    • tags: etiquetas cortas. Ponle las que quieras o [].
+   • porVisitar: ¿un lugar que se ve TOP pero aún NO has ido? Agrégale
+       porVisitar: true  y saldrá con la etiqueta "En mi radar" (y no puede
+       ser el favorito con corona). Si ya fuiste, bórralo o ponlo en false.
    • UBICACIÓN (filtro lateral de arriba): se toma AUTOMÁTICO de lo que va
      ANTES del "·" en meta. Ej. meta:"Coyoacán · Sushi" → zona "Coyoacán".
      Escríbela IGUALITO en todos (mismos acentos) para que se agrupen bien.
@@ -314,7 +387,9 @@ const CURADOR = "K"; // ← tu nombre en los créditos
 const ZONA_ALIAS = {
   "Roma Norte": "Roma / Tacubaya / Juárez",
   "Tacubaya":   "Roma / Tacubaya / Juárez",
-  "Juárez":     "Roma / Tacubaya / Juárez"
+  "Juárez":     "Roma / Tacubaya / Juárez",
+  "San Ángel":  "San Ángel / Pedregal",
+  "Pedregal":   "San Ángel / Pedregal"
 };
 
 const SECCIONES = [
@@ -384,6 +459,25 @@ const SECCIONES = [
         tags: ["Mezcal artesanal", "Comida deli", "Mercado del Carmen"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=J%C3%BApiter+Cervecer%C3%ADa+Mercado+del+Carmen+Coyoac%C3%A1n"
+      },
+      {
+        rank: 8,
+        nombre: "Departamento",
+        meta: "Roma Norte · Rooftop bar",
+        nota: "Rooftop en la Roma con buena vibra y coctelería. En la lista para caer pronto.",
+        tags: ["Rooftop", "Coctelería"],
+        porVisitar: true,
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Departamento+Roma+Norte+%C3%81lvaro+Obreg%C3%B3n"
+      },
+      {
+        rank: 9,
+        nombre: "Mezcalería El Indio",
+        meta: "Coyoacán · Mezcalería (Palacio de Hierro, Nivel 2)",
+        nota: "Adentro del Palacio de Hierro Coyoacán. El clásico 'acompáñame de compras' que misteriosamente termina en mezcales. Paras 'un ratito' y ya son las diez.",
+        tags: ["Mezcal", "Un ratito", "De compras"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Mezcaler%C3%ADa+El+Indio+Coyoac%C3%A1n"
       }
     ]
   },
@@ -435,6 +529,34 @@ const SECCIONES = [
         tags: ["Cortes", "Cenas", "Ambiente"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=Sonora+Grill+Narvarte+Churubusco"
+      },
+      {
+        rank: 6,
+        nombre: "Centenario 107",
+        meta: "Coyoacán · Restaurante & coctelería",
+        nota: "Cocina rica y coctelería de las buenas. Pendientísimo por ir.",
+        tags: ["Me lo recomendaron", "Coctelería"],
+        porVisitar: true,
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Centenario+107+Coyoac%C3%A1n"
+      },
+      {
+        rank: 7,
+        nombre: "Pizzería Selva Negra",
+        meta: "Ajusco · Pizza a la leña",
+        nota: "Pizzas a la leña en pleno bosque. Buenos drinks, buena atención y muy buen ambiente. Eso sí: llévate suéter porque hace un friazo jaja.",
+        tags: ["Pizza a la leña", "Buenos drinks", "Lleva suéter"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Selva+Negra+Ajusco"
+      },
+      {
+        rank: 8,
+        nombre: "El Mayor",
+        meta: "Centro Histórico · Mexicana",
+        nota: "Terraza con vista al Templo Mayor y al corazón del Centro. Comida mexicana con la mejor postal de la ciudad.",
+        tags: ["Vista", "Mexicana", "Centro"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Restaurante+El+Mayor+Centro+Hist%C3%B3rico"
       }
     ]
   },
@@ -465,6 +587,24 @@ const SECCIONES = [
         tags: ["Favorito absoluto", "Bailar", "Hasta el cierre"],
         foto: "",
         mapa: "https://www.google.com/maps/search/?api=1&query=Cincodoce+Florencia+41+Ju%C3%A1rez+CDMX"
+      },
+      {
+        rank: 3,
+        nombre: "Janis",
+        meta: "Roma Norte · Bar & baile",
+        nota: "Cumple bien: la música está buena y los drinks pasables. Para una noche casual, va que vuela.",
+        tags: ["Buena música", "Casual", "Historias"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Janis+Roma+Norte+CDMX"
+      },
+      {
+        rank: 2,
+        nombre: "Mezontle",
+        meta: "Pedregal · Bar & música",
+        nota: "Un clásico para el reventón: buena música, buen ambiente y precios amables. Cae seguro.",
+        tags: ["Lo clásico", "Buena música", "Buenos precios"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Mezontle+Pedregal"
       }
     ]
   },
@@ -493,11 +633,35 @@ const SECCIONES = [
     ]
   },
   {
+    seccion: "Aire libre",
+    zona: "Ajusco",
+    lugares: [
+      {
+        rank: 1,
+        nombre: "San Nicolás Totolapan",
+        meta: "Ajusco · Bosque",
+        nota: "Downhill o senderismo, tú decides. La comida está bastante buena y es un respiro total de la CDMX.",
+        tags: ["Downhill", "Senderismo", "Respiro de la ciudad"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Parque+San+Nicol%C3%A1s+Totolapan"
+      }
+    ]
+  },
+  {
     seccion: "Cafés y postres",
     zona: "Del Valle / Roma",
     lugares: [
       {
         rank: 1,
+        nombre: "Cafebrería El Péndulo",
+        meta: "San Ángel · Cafebrería",
+        nota: "Café y librería en el mismo lugar: llegas por un libro y te quedas horas. Ambiente precioso para leer o platicar.",
+        tags: ["Café", "Librería", "Ambiente"],
+        foto: "",
+        mapa: "https://www.google.com/maps/search/?api=1&query=Cafebrer%C3%ADa+El+P%C3%A9ndulo+San+%C3%81ngel"
+      },
+      {
+        rank: 2,
         nombre: "El café que amo",
         meta: "Roma Norte · Café de especialidad",
         nota: "Mi oficina no oficial. Wifi, luz bonita y el mejor flat white de la zona.",
@@ -554,7 +718,7 @@ const getZona = (l) => {
   const raw = (l.meta || "").split("·")[0].trim() || "Otros";
   return (typeof ZONA_ALIAS !== "undefined" && ZONA_ALIAS[raw]) || raw;
 };
-const ZONA_ORDEN = ["Coyoacán", "San Ángel", "Roma / Tacubaya / Juárez", "Del Valle"]; // orden preferido
+const ZONA_ORDEN = ["Coyoacán", "San Ángel / Pedregal", "Roma / Tacubaya / Juárez", "Del Valle"]; // orden preferido
 let FILTRO = "Todos";   // ubicación seleccionada
 let PLAN   = "Todos";   // tipo de plan seleccionado (nombre de la sección)
 
@@ -613,12 +777,15 @@ function render() {
     lugares = lugares.slice().sort((a,b)=>(a.rank||99)-(b.rank||99));
     visibles++;
 
-    const first = lugares[0];
-    const rest = lugares.slice(1);
     const idOf = (l)=>`${sec.seccion}·${l.nombre}`;
     const zonasSec = [...new Set(lugares.map(getZona))].join(" · ");
+    const radar = (l)=> l.porVisitar ? `<span class="radar">✨ En mi radar · aún no lo pruebo</span>` : "";
 
-    const featured = `
+    // La corona de "El favorito" solo la puede llevar un lugar YA visitado
+    const first = lugares.find(l => !l.porVisitar) || null;
+    const cards = first ? lugares.filter(l => l !== first) : lugares;
+
+    const featured = first ? `
       <article class="featured">
         ${foto(first)}
         <div class="cuerpo">
@@ -629,12 +796,13 @@ function render() {
           ${tags(first)}
           <div class="row-bottom">${mapa(first)}${favBtn(idOf(first))}</div>
         </div>
-      </article>`;
+      </article>` : "";
 
-    const grid = rest.length ? `<div class="grid">${rest.map((l)=>`
-      <article class="card">
+    const grid = cards.length ? `<div class="grid">${cards.map((l)=>`
+      <article class="card${l.porVisitar ? ' card-radar' : ''}">
         ${foto(l)}
         <div class="cuerpo">
+          ${radar(l)}
           <h3>${escapeHtml(l.nombre)}</h3>
           <div class="meta">${escapeHtml(l.meta||"")}</div>
           <p class="nota">${escapeHtml(l.nota||"")}</p>
@@ -685,6 +853,17 @@ function updateTally() {
 }
 document.getElementById("tally-reset").addEventListener("click", () => { store.set({}); render(); });
 
+/* Reproductor de música: abrir/cerrar */
+(function(){
+  const t = document.getElementById("player-toggle");
+  const body = document.getElementById("player-body");
+  t.addEventListener("click", () => {
+    const abierto = body.hasAttribute("hidden") === false;
+    if (abierto) { body.setAttribute("hidden",""); t.setAttribute("aria-expanded","false"); }
+    else { body.removeAttribute("hidden"); t.setAttribute("aria-expanded","true"); }
+  });
+})();
+
 function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 function escapeAttr(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
@@ -703,9 +882,38 @@ async function mostrarVisitas() {
   } catch (e) { /* si el servicio falla, simplemente no se muestra */ }
 }
 
+/* --- Spotify iFrame API: permite arrancar la música con un clic --- */
+let spotifyController = null;
+window.onSpotifyIframeApiReady = (IFrameAPI) => {
+  const el = document.getElementById("spotify-embed");
+  if (!el) return;
+  IFrameAPI.createController(el, {
+    uri: "spotify:playlist:1tJy1bO1H2IWItOhwAg3Ws",
+    width: "100%", height: 152
+  }, (controller) => { spotifyController = controller; });
+};
+
+/* --- Pantalla de bienvenida (el clic es lo que permite reproducir audio) --- */
+(function(){
+  const entrada = document.getElementById("entrada");
+  const cerrar = () => entrada.classList.add("oculto");
+  document.getElementById("entrar-mudo").addEventListener("click", cerrar);
+  document.getElementById("entrar-musica").addEventListener("click", () => {
+    try {
+      if (spotifyController) {
+        spotifyController.play();
+        document.getElementById("player-body").removeAttribute("hidden");
+        document.getElementById("player-toggle").setAttribute("aria-expanded","true");
+      }
+    } catch (e) {}
+    cerrar();
+  });
+})();
+
 renderTabs();
 render();
 mostrarVisitas();
 </script>
+<script async src="https://open.spotify.com/embed/iframe-api/v1"></script>
 </body>
 </html>
