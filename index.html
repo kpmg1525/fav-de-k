@@ -872,8 +872,11 @@ const CONTADOR = { ns: "favdek-kpmg1525", key: "home" }; // identificador único
 async function mostrarVisitas() {
   const el = document.getElementById("visitas");
   try {
+    // Modo dueña: si entras con ?yo=1, este navegador queda marcado y NUNCA suma.
+    if (new URLSearchParams(location.search).has("yo")) localStorage.setItem("fdk-owner", "1");
+    const soyDuena = localStorage.getItem("fdk-owner") === "1";
     const yaConto = sessionStorage.getItem("fdk-conto");
-    const accion = yaConto ? "get" : "hit"; // "hit" suma 1; "get" solo lee
+    const accion = (soyDuena || yaConto) ? "get" : "hit"; // "hit" suma 1; "get" solo lee
     const r = await fetch(`https://abacus.jasoncameron.dev/${accion}/${CONTADOR.ns}/${CONTADOR.key}`);
     const d = await r.json();
     if (!yaConto) sessionStorage.setItem("fdk-conto", "1");
