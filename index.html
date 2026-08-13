@@ -3,7 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>La Guía · Lugares que apruebo</title>
+<title>Fav de K · Lugares que apruebo</title>
+<meta name="description" content="Una curaduría rigurosa y absolutamente subjetiva de los mejores lugares de la CDMX: drinks, restaurantes, tacos, antros, desayuno y más." />
+<meta name="theme-color" content="#C21E6E" />
+
+<!-- Cómo se ve el link al compartirlo (WhatsApp, IG, Twitter) -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="es_MX" />
+<meta property="og:site_name" content="Fav de K" />
+<meta property="og:url" content="https://kpmg1525.github.io/fav-de-k/" />
+<meta property="og:title" content="Fav de K · Lugares que apruebo" />
+<meta property="og:description" content="Una curaduría rigurosa y absolutamente subjetiva de los mejores lugares de la CDMX." />
+<!-- Para que salga FOTO en la vista previa: sube una imagen de 1200x630 al repo
+     (por ejemplo portada.jpg) y descomenta la línea de abajo.
+<meta property="og:image" content="https://kpmg1525.github.io/fav-de-k/portada.jpg" />
+-->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Fav de K · Lugares que apruebo" />
+<meta name="twitter:description" content="Una curaduría rigurosa y absolutamente subjetiva de los mejores lugares de la CDMX." />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='14'%20fill='%23C21E6E'/%3E%3Ctext%20x='32'%20y='46'%20font-family='Georgia,serif'%20font-size='42'%20fill='%23fff'%20text-anchor='middle'%3EK%3C/text%3E%3C/svg%3E" />
 <style>
   /* ============================================================
      PALETA — buganvilia + tinta aubergine + jade + oro (para el N.º1)
@@ -96,7 +115,14 @@
     border-bottom: 1px solid var(--line);
   }
   .zonas-bar .wrap { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
-  .filtro-fila { display: flex; align-items: center; gap: 14px; }
+  .filtro-fila { display: flex; align-items: center; gap: 14px; position: relative; }
+  /* degradado a la derecha: avisa que hay más filtros hacia allá */
+  .filtro-fila::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 54px;
+    background: linear-gradient(to right, transparent, color-mix(in srgb, var(--paper) 92%, transparent));
+    pointer-events: none; opacity: 0; transition: opacity .2s;
+  }
+  .filtro-fila.hay-mas::after { opacity: 1; }
   .zonas-label {
     font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
     color: var(--ink-soft); font-weight: 600; flex: none;
@@ -212,7 +238,6 @@
   .fav:hover { color: var(--buga); border-color: var(--buga); }
   .fav[aria-pressed="true"] { color: #fff; background: var(--buga); border-color: var(--buga); }
   .fav[aria-pressed="true"] svg { fill: #fff; stroke: #fff; transform: scale(1.05); }
-  :root[data-theme="dark"] .fav[aria-pressed="true"], @media (prefers-color-scheme: dark) { }
 
   /* foto: imagen + placeholder detrás */
   .foto { position: relative; background: linear-gradient(135deg, var(--buga-deep), var(--jade)); }
@@ -223,25 +248,6 @@
   }
   .foto .ph span { font-family:"Didot",Georgia,serif; font-size: 18px; opacity: .9; }
   .foto .ph small { display:block; font-size: 11px; letter-spacing:.14em; text-transform:uppercase; opacity:.65; margin-top:6px; }
-
-  /* ---------- PANTALLA DE BIENVENIDA ---------- */
-  .entrada {
-    position: fixed; inset: 0; z-index: 200; background: var(--paper);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 14px; text-align: center; padding: 24px;
-    transition: opacity .5s ease;
-  }
-  .entrada.oculto { opacity: 0; pointer-events: none; }
-  .entrada-title { font-size: clamp(56px, 15vw, 120px); font-weight: 400; margin: 4px 0; line-height: .9; }
-  .entrada-title em { font-style: italic; color: var(--buga); }
-  .entrada-sub { color: var(--ink-soft); max-width: 30ch; margin: 0 0 14px; }
-  .entrada-btn {
-    display: inline-flex; align-items: center; gap: 9px; cursor: pointer;
-    background: var(--buga); color: #fff; border: none; font-family: inherit;
-    font-size: 15px; letter-spacing: .04em; padding: 15px 30px; border-radius: 100px;
-    box-shadow: 0 10px 34px rgba(194,30,110,.35); transition: transform .15s;
-  }
-  .entrada-btn:hover { transform: translateY(-2px); }
 
   /* ---------- BARRA FLOTANTE (conteo de escogidos) ---------- */
   .tally {
@@ -261,6 +267,9 @@
     cursor: pointer; letter-spacing: .08em;
   }
   .tally button:hover { border-color: var(--paper); }
+  /* modo "acabo de borrar, todavía puedes deshacer" */
+  .tally.undo { background: var(--buga-deep); }
+  .tally.undo button { border-color: rgba(255,255,255,.8); font-weight: 700; }
 
   footer { text-align: center; padding: 60px 22px 120px; color: var(--ink-soft); font-size: 14px; }
   footer .display { font-size: 22px; color: var(--ink); display: block; margin-bottom: 6px; }
@@ -281,13 +290,6 @@
 </style>
 </head>
 <body>
-
-<div class="entrada" id="entrada">
-  <div class="eyebrow">Colección privada · Ciudad de México</div>
-  <h2 class="entrada-title display">Fav de <em>K</em></h2>
-  <p class="entrada-sub">Una curaduría rigurosa y absolutamente subjetiva.</p>
-  <button class="entrada-btn" id="entrar">Entrar</button>
-</div>
 
 <header class="masthead">
   <div class="eyebrow">Colección privada · Ciudad de México · MMXXVI</div>
@@ -312,8 +314,8 @@
 <main class="wrap" id="app"></main>
 
 <div class="tally" id="tally">
-  <span>Ya escogiste <b id="tally-n">0</b></span>
-  <button id="tally-reset">reiniciar</button>
+  <span id="tally-msg">Ya escogiste <b id="tally-n">0</b></span>
+  <button id="tally-btn">reiniciar</button>
 </div>
 
 <footer>
@@ -712,8 +714,19 @@ const store = {
   set(v) { try { localStorage.setItem(this.key, JSON.stringify(v)); } catch(e){} }
 };
 
+/* ¿Soy yo, la dueña? Con ?yo=1 este navegador queda marcado para siempre.
+   Sirve para dos cosas: no inflar el contador de visitas y ver los recordatorios
+   de edición (como "agrega tu foto aquí") que las visitas NO deben ver. */
+const SOY_DUENA = (() => {
+  try {
+    if (new URLSearchParams(location.search).has("yo")) localStorage.setItem("fdk-owner", "1");
+    return localStorage.getItem("fdk-owner") === "1";
+  } catch (e) { return false; }
+})();
+
 function foto(l) {
-  const ph = `<div class="ph"><div><span>${escapeHtml(l.nombre)}</span><small>agrega tu foto aquí</small></div></div>`;
+  const pista = SOY_DUENA ? `<small>agrega tu foto aquí</small>` : "";
+  const ph = `<div class="ph"><div><span>${escapeHtml(l.nombre)}</span>${pista}</div></div>`;
   if (!l.foto) return `<div class="foto">${ph}</div>`;
   return `<div class="foto">${ph}<img src="${escapeAttr(l.foto)}" alt="${escapeAttr(l.nombre)}" loading="lazy" onerror="this.style.display='none'"></div>`;
 }
@@ -772,7 +785,18 @@ function renderTabs() {
     `<button class="zona-btn plan-btn" data-plan="${escapeAttr(p)}" aria-pressed="${p===PLAN}">${escapeHtml(p)}<span class="cuenta">${n}</span></button>`
   ).join("");
   pEl.querySelectorAll(".plan-btn").forEach(b => b.addEventListener("click", () => setFiltro("plan", b.dataset.plan)));
+
+  [zEl, pEl].forEach(el => { marcarScroll(el); el.onscroll = () => marcarScroll(el); });
 }
+
+/* Enciende el degradado del borde solo si de verdad queda algo por scrollear */
+function marcarScroll(el) {
+  const hayMas = el.scrollWidth - el.clientWidth - el.scrollLeft > 4;
+  el.parentElement.classList.toggle("hay-mas", hayMas);
+}
+window.addEventListener("resize", () => {
+  ["zonas","planes"].forEach(id => marcarScroll(document.getElementById(id)));
+});
 
 function setFiltro(tipo, valor) {
   if (tipo === "zona") FILTRO = valor; else PLAN = valor;
@@ -862,11 +886,42 @@ function toggle(btn) {
 }
 
 function updateTally() {
+  if (undoData) return; // en modo "deshacer" la barra la maneja el bloque de abajo
   const n = Object.keys(store.get()).length;
   document.getElementById("tally-n").textContent = n;
   document.getElementById("tally").classList.toggle("show", n > 0);
 }
-document.getElementById("tally-reset").addEventListener("click", () => { store.set({}); render(); });
+
+/* --- Borrar favoritos SIEMPRE se puede deshacer (7 segundos) --- */
+let undoData = null, undoTimer = null;
+
+function salirDeUndo() {
+  clearTimeout(undoTimer);
+  undoData = null; undoTimer = null;
+  document.getElementById("tally").classList.remove("undo");
+  document.getElementById("tally-msg").innerHTML = 'Ya escogiste <b id="tally-n">0</b>';
+  document.getElementById("tally-btn").textContent = "reiniciar";
+  updateTally();
+}
+
+document.getElementById("tally-btn").addEventListener("click", () => {
+  // segundo clic: el usuario se arrepintió → le devolvemos sus favoritos
+  if (undoData) { store.set(undoData); salirDeUndo(); render(); return; }
+
+  const previos = store.get();
+  const n = Object.keys(previos).length;
+  if (!n) return;
+
+  undoData = previos;
+  store.set({});
+  render();
+
+  const t = document.getElementById("tally");
+  document.getElementById("tally-msg").textContent = `Borré tus ${n} favorito${n === 1 ? "" : "s"}`;
+  document.getElementById("tally-btn").textContent = "deshacer";
+  t.classList.add("undo", "show");
+  undoTimer = setTimeout(salirDeUndo, 7000);
+});
 
 function escapeHtml(s){ return String(s).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
 function escapeAttr(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
@@ -876,11 +931,9 @@ const CONTADOR = { ns: "favdek-kpmg1525", key: "home" }; // identificador único
 async function mostrarVisitas() {
   const el = document.getElementById("visitas");
   try {
-    // Modo dueña: si entras con ?yo=1, este navegador queda marcado y NUNCA suma.
-    if (new URLSearchParams(location.search).has("yo")) localStorage.setItem("fdk-owner", "1");
-    const soyDuena = localStorage.getItem("fdk-owner") === "1";
+    // Modo dueña (SOY_DUENA, definido arriba): mis visitas NUNCA suman.
     const yaConto = sessionStorage.getItem("fdk-conto");
-    const accion = (soyDuena || yaConto) ? "get" : "hit"; // "hit" suma 1; "get" solo lee
+    const accion = (SOY_DUENA || yaConto) ? "get" : "hit"; // "hit" suma 1; "get" solo lee
     const r = await fetch(`https://abacus.jasoncameron.dev/${accion}/${CONTADOR.ns}/${CONTADOR.key}`);
     const d = await r.json();
     if (!yaConto) sessionStorage.setItem("fdk-conto", "1");
@@ -888,12 +941,6 @@ async function mostrarVisitas() {
     el.style.display = "block";
   } catch (e) { /* si el servicio falla, simplemente no se muestra */ }
 }
-
-/* --- Pantalla de bienvenida --- */
-(function(){
-  const entrada = document.getElementById("entrada");
-  document.getElementById("entrar").addEventListener("click", () => entrada.classList.add("oculto"));
-})();
 
 renderTabs();
 render();
