@@ -114,7 +114,28 @@
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--line);
   }
-  .zonas-bar .wrap { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; padding-bottom: 12px; }
+  .zonas-bar .wrap { display: flex; flex-direction: column; gap: 9px; padding-top: 10px; padding-bottom: 10px; }
+
+  /* ---------- BUSCADOR ---------- */
+  .busca-fila {
+    display: flex; align-items: center; gap: 9px;
+    border: 1px solid var(--line); border-radius: 100px;
+    padding: 7px 15px; background: var(--paper-2); transition: border-color .15s;
+  }
+  .busca-fila:focus-within { border-color: var(--buga); }
+  .busca-fila svg { width: 15px; height: 15px; flex: none; fill: none; stroke: var(--ink-soft); stroke-width: 2; }
+  .busca-fila:focus-within svg { stroke: var(--buga); }
+  #busca {
+    flex: 1; min-width: 0; border: none; background: none; padding: 0;
+    font-family: inherit; font-size: 14.5px; color: var(--ink);
+  }
+  #busca:focus { outline: none; }
+  #busca::placeholder { color: var(--ink-soft); }
+  #busca-x {
+    flex: none; border: none; background: none; cursor: pointer; padding: 0 2px;
+    color: var(--ink-soft); font-family: inherit; font-size: 20px; line-height: 1;
+  }
+  #busca-x:hover { color: var(--buga); }
   .filtro-fila { display: flex; align-items: center; gap: 14px; position: relative; }
   /* degradado a la derecha: avisa que hay más filtros hacia allá */
   .filtro-fila::after {
@@ -196,6 +217,16 @@
   .card .foto { aspect-ratio: 4 / 3; }
   .card .cuerpo { padding: 18px 18px 16px; display: flex; flex-direction: column; flex: 1; }
 
+  /* --- tarjetas sin foto: compactas, con una barra de color como ancla --- */
+  .featured.sinfoto { grid-template-columns: 1fr; }
+  .featured.sinfoto .cuerpo { padding: 28px 30px 26px; }
+  .card.sinfoto { border-top: 3px solid var(--buga); }
+  .card.sinfoto.card-radar { border-top-color: var(--jade); }
+  .sin-foto-aviso {
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-soft); background: var(--line); padding: 4px 18px;
+  }
+
   /* piezas comunes */
   h3 { font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;
        margin: 0 0 6px; font-weight: 400; letter-spacing: -.01em; line-height: 1.02;
@@ -267,9 +298,18 @@
     cursor: pointer; letter-spacing: .08em;
   }
   .tally button:hover { border-color: var(--paper); }
+  /* botón encendido = estás viendo solo tus favoritos */
+  .tally button[aria-pressed="true"] {
+    background: var(--buga); border-color: var(--buga); color: #fff; font-weight: 600;
+  }
   /* modo "acabo de borrar, todavía puedes deshacer" */
   .tally.undo { background: var(--buga-deep); }
   .tally.undo button { border-color: rgba(255,255,255,.8); font-weight: 700; }
+  .tally.undo #tally-ver { display: none; }
+  @media (max-width: 420px) {
+    .tally { gap: 8px; padding: 10px 14px; font-size: 12px; }
+    .tally button { padding: 4px 9px; font-size: 11px; }
+  }
 
   footer { text-align: center; padding: 60px 22px 120px; color: var(--ink-soft); font-size: 14px; }
   footer .display { font-size: 22px; color: var(--ink); display: block; margin-bottom: 6px; }
@@ -300,6 +340,12 @@
 
 <nav class="zonas-bar" aria-label="Filtros">
   <div class="wrap">
+    <div class="busca-fila">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="busca" type="text" autocomplete="off" spellcheck="false"
+             placeholder="Buscar lugar, colonia o antojo…" aria-label="Buscar en la guía" />
+      <button id="busca-x" hidden aria-label="Borrar búsqueda">×</button>
+    </div>
     <div class="filtro-fila">
       <span class="zonas-label">Ubicación</span>
       <div class="zonas" id="zonas"></div>
@@ -315,6 +361,8 @@
 
 <div class="tally" id="tally">
   <span id="tally-msg">Ya escogiste <b id="tally-n">0</b></span>
+  <button id="tally-ver" aria-pressed="false">ver los míos</button>
+  <button id="tally-copiar" hidden>copiar mi lista</button>
   <button id="tally-btn">reiniciar</button>
 </div>
 
@@ -725,9 +773,9 @@ const SOY_DUENA = (() => {
 })();
 
 function foto(l) {
-  const pista = SOY_DUENA ? `<small>agrega tu foto aquí</small>` : "";
-  const ph = `<div class="ph"><div><span>${escapeHtml(l.nombre)}</span>${pista}</div></div>`;
-  if (!l.foto) return `<div class="foto">${ph}</div>`;
+  // Sin foto NO reservamos el rectángulo 4:3: la tarjeta va compacta.
+  if (!l.foto) return SOY_DUENA ? `<div class="sin-foto-aviso">falta la foto</div>` : "";
+  const ph = `<div class="ph"><div><span>${escapeHtml(l.nombre)}</span></div></div>`;
   return `<div class="foto">${ph}<img src="${escapeAttr(l.foto)}" alt="${escapeAttr(l.nombre)}" loading="lazy" onerror="this.style.display='none'"></div>`;
 }
 function tags(l) {
@@ -749,6 +797,9 @@ const getZona = (l) => {
 const ZONA_ORDEN = ["Coyoacán", "San Ángel / Pedregal", "Roma / Tacubaya / Juárez", "Del Valle"]; // orden preferido
 let FILTRO = "Todos";   // ubicación seleccionada
 let PLAN   = "Todos";   // tipo de plan seleccionado (nombre de la sección)
+let SOLO_FAVS = false;  // ¿mostrar únicamente los lugares que el visitante marcó?
+let FAVS = {};          // copia en memoria de los favoritos (se refresca en cada render)
+let BUSCA = "";         // texto del buscador, ya normalizado
 
 function zonasDisponibles() {
   const set = [];
@@ -759,15 +810,31 @@ function zonasDisponibles() {
   });
 }
 
+const idOf = (sec, l) => `${sec.seccion}·${l.nombre}`;
+
+/* "Coyoacán" y "coyoacan" tienen que ser la misma cosa al buscar */
+const norm = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 const matchZona = (l) => FILTRO === "Todos" || getZona(l) === FILTRO;
 const matchPlan = (s) => PLAN === "Todos" || s.seccion === PLAN;
+const matchFav  = (s,l) => !SOLO_FAVS || !!FAVS[idOf(s, l)];
 
-/* Los contadores respetan el OTRO filtro activo, para que siempre reflejen
-   lo que verías al combinar ambos. */
-function contarZona(z)  { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.filter(l=>getZona(l)===z).length : 0), 0); }
-function totalZonas()   { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.length : 0), 0); }
-function contarPlan(s)  { return s.lugares.filter(matchZona).length; }
-function totalPlanes()  { return SECCIONES.reduce((n,s)=> n + s.lugares.filter(matchZona).length, 0); }
+/* Busca en nombre, colonia, sección, tags Y en la nota (para que "reggaeton"
+   o "papas" encuentren su lugar). Con varias palabras, deben cumplirse todas. */
+const matchBusca = (s,l) => {
+  if (!BUSCA) return true;
+  const heno = norm([l.nombre, l.meta, l.nota, (l.tags||[]).join(" "), s.seccion, getZona(l)].join(" "));
+  return BUSCA.split(/\s+/).every(t => heno.includes(t));
+};
+
+const pasa = (s,l) => matchZona(l) && matchFav(s,l) && matchBusca(s,l);
+
+/* Los contadores respetan los OTROS filtros activos, para que siempre reflejen
+   lo que verías al combinar todos. */
+function contarZona(z)  { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.filter(l=>getZona(l)===z && matchFav(s,l) && matchBusca(s,l)).length : 0), 0); }
+function totalZonas()   { return SECCIONES.reduce((n,s)=> n + (matchPlan(s) ? s.lugares.filter(l=>matchFav(s,l) && matchBusca(s,l)).length : 0), 0); }
+function contarPlan(s)  { return s.lugares.filter(l=>pasa(s,l)).length; }
+function totalPlanes()  { return SECCIONES.reduce((n,s)=> n + s.lugares.filter(l=>pasa(s,l)).length, 0); }
 
 function renderTabs() {
   // ---- Ubicación ----
@@ -804,28 +871,73 @@ function setFiltro(tipo, valor) {
   render();
 }
 
+/* Deja la página como recién cargada: sin ubicación, sin plan y sin la vista
+   de favoritos. Un solo render, no tres. */
+function limpiarFiltros() {
+  FILTRO = "Todos"; PLAN = "Todos";
+  if (SOLO_FAVS) setVistaFavs(false);
+  limpiarBusqueda(false);
+  renderTabs();
+  render();
+}
+
+/* --- Buscador --- */
+function limpiarBusqueda(repintar = true) {
+  BUSCA = "";
+  document.getElementById("busca").value = "";
+  document.getElementById("busca-x").hidden = true;
+  if (repintar) { renderTabs(); render(); }
+}
+
+let buscaTimer;
+document.getElementById("busca").addEventListener("input", (e) => {
+  const v = e.target.value;
+  document.getElementById("busca-x").hidden = !v;
+  clearTimeout(buscaTimer);
+  buscaTimer = setTimeout(() => {   // esperar a que deje de teclear
+    BUSCA = norm(v).trim();
+    renderTabs();
+    render();
+  }, 120);
+});
+
+document.getElementById("busca").addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { limpiarBusqueda(); e.target.blur(); }
+});
+
+document.getElementById("busca-x").addEventListener("click", () => {
+  limpiarBusqueda();
+  document.getElementById("busca").focus();
+});
+
 function render() {
-  const favs = store.get();
+  const favs = FAVS = store.get();
   const app = document.getElementById("app");
   let visibles = 0;
 
   app.innerHTML = SECCIONES.map((sec) => {
     if (!matchPlan(sec)) return "";
-    let lugares = sec.lugares.filter(matchZona);
+    let lugares = sec.lugares.filter(l => pasa(sec, l));
     if (!lugares.length) return "";
     lugares = lugares.slice().sort((a,b)=>(a.rank||99)-(b.rank||99));
     visibles++;
 
-    const idOf = (l)=>`${sec.seccion}·${l.nombre}`;
     const zonasSec = [...new Set(lugares.map(getZona))].join(" · ");
     const radar = (l)=> l.porVisitar ? `<span class="radar">✨ En mi radar · aún no lo pruebo</span>` : "";
 
-    // La corona de "El favorito" solo la puede llevar un lugar YA visitado
-    const first = lugares.find(l => !l.porVisitar) || null;
+    // La corona es de UN lugar concreto: el mejor rankeado de la sección que ya
+    // visité. Se calcula sobre la sección COMPLETA, no sobre lo que quedó
+    // filtrado; si no, al filtrar coronaríamos al rank 8 solo por ser el único
+    // que sobrevivió. Si el verdadero favorito no está a la vista, no hay corona.
+    // En "mis favoritos" tampoco: ahí la lista es del visitante, no mi ranking.
+    const reyDeLaSeccion = sec.lugares.slice()
+      .sort((a,b)=>(a.rank||99)-(b.rank||99))
+      .find(l => !l.porVisitar);
+    const first = (!SOLO_FAVS && reyDeLaSeccion && lugares.includes(reyDeLaSeccion)) ? reyDeLaSeccion : null;
     const cards = first ? lugares.filter(l => l !== first) : lugares;
 
     const featured = first ? `
-      <article class="featured">
+      <article class="featured${first.foto ? "" : " sinfoto"}">
         ${foto(first)}
         <div class="cuerpo">
           <span class="num1-badge">${crown} El favorito</span>
@@ -833,12 +945,12 @@ function render() {
           <div class="meta">${escapeHtml(first.meta||"")}</div>
           <p class="nota">${escapeHtml(first.nota||"")}</p>
           ${tags(first)}
-          <div class="row-bottom">${mapa(first)}${favBtn(idOf(first))}</div>
+          <div class="row-bottom">${mapa(first)}${favBtn(idOf(sec, first))}</div>
         </div>
       </article>` : "";
 
     const grid = cards.length ? `<div class="grid">${cards.map((l)=>`
-      <article class="card${l.porVisitar ? ' card-radar' : ''}">
+      <article class="card${l.porVisitar ? ' card-radar' : ''}${l.foto ? '' : ' sinfoto'}">
         ${foto(l)}
         <div class="cuerpo">
           ${radar(l)}
@@ -846,7 +958,7 @@ function render() {
           <div class="meta">${escapeHtml(l.meta||"")}</div>
           <p class="nota">${escapeHtml(l.nota||"")}</p>
           ${tags(l)}
-          <div class="row-bottom">${mapa(l)}${favBtn(idOf(l))}</div>
+          <div class="row-bottom">${mapa(l)}${favBtn(idOf(sec, l))}</div>
         </div>
       </article>`).join("")}</div>` : "";
 
@@ -861,10 +973,17 @@ function render() {
   }).join("");
 
   if (!visibles) {
+    const sinFavs = SOLO_FAVS && !Object.keys(favs).length;
+    const titulo = sinFavs ? "Todavía no escoges ninguno."
+                 : BUSCA   ? `Nada con «${escapeHtml(document.getElementById("busca").value.trim())}».`
+                 : "Nada con esa combinación… todavía.";
+    const bajada = sinFavs ? "Dale al ❤︎ de los lugares que te laten y aquí se te juntan."
+                 : BUSCA   ? "Prueba con otra palabra, o con el nombre de la colonia."
+                 : "Prueba con otra ubicación o tipo de plan.";
     app.innerHTML = `<section class="seccion" style="text-align:center;padding:80px 0;color:var(--ink-soft)">
-      <p class="display" style="font-size:26px;color:var(--ink)">Nada con esa combinación… todavía.</p>
-      <p>Prueba con otra ubicación o tipo de plan.</p>
-      <button class="zona-btn" style="margin-top:16px" onclick="setFiltro('zona','Todos');setFiltro('plan','Todos')">Quitar filtros</button>
+      <p class="display" style="font-size:26px;color:var(--ink)">${titulo}</p>
+      <p>${bajada}</p>
+      <button class="zona-btn" style="margin-top:16px" onclick="limpiarFiltros()">Quitar filtros</button>
     </section>`;
   }
 
@@ -882,8 +1001,47 @@ function toggle(btn) {
   if (on) { delete favs[btn.dataset.id]; btn.setAttribute("aria-pressed","false"); btn.querySelector("span").textContent="Yo le entro"; }
   else { favs[btn.dataset.id] = true; btn.setAttribute("aria-pressed","true"); btn.querySelector("span").textContent="Le entras ✓"; }
   store.set(favs);
-  updateTally();
+  FAVS = favs;
+  // Si estás viendo "los míos", la lista ES tu selección: que se note al instante.
+  if (SOLO_FAVS) { renderTabs(); render(); } else updateTally();
 }
+
+/* --- Vista "solo mis favoritos" --- */
+function setVistaFavs(on) {
+  SOLO_FAVS = on;
+  const b = document.getElementById("tally-ver");
+  b.textContent = on ? "ver todos" : "ver los míos";
+  b.setAttribute("aria-pressed", String(on));
+  document.getElementById("tally-copiar").hidden = !on;
+}
+
+/* --- El corazón por fin va a algún lado: tu lista, lista para pegar --- */
+document.getElementById("tally-copiar").addEventListener("click", async (e) => {
+  const favs = store.get();
+  const lineas = [];
+  SECCIONES.forEach(s => s.lugares.forEach(l => {
+    if (favs[idOf(s, l)]) lineas.push(`• ${l.nombre} — ${l.meta}${l.mapa ? "\n  " + l.mapa : ""}`);
+  }));
+  if (!lineas.length) return;
+  const texto = `Mi lista de Fav de K:\n\n${lineas.join("\n")}\n\nLa guía completa: https://kpmg1525.github.io/fav-de-k/`;
+  const btn = e.currentTarget;
+  try {
+    await navigator.clipboard.writeText(texto);
+  } catch (err) {
+    const ta = document.createElement("textarea");
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove();
+  }
+  btn.textContent = "¡copiada! ✓";
+  setTimeout(() => { btn.textContent = "copiar mi lista"; }, 2200);
+});
+
+document.getElementById("tally-ver").addEventListener("click", () => {
+  setVistaFavs(!SOLO_FAVS);
+  renderTabs();
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 
 function updateTally() {
   if (undoData) return; // en modo "deshacer" la barra la maneja el bloque de abajo
@@ -906,7 +1064,7 @@ function salirDeUndo() {
 
 document.getElementById("tally-btn").addEventListener("click", () => {
   // segundo clic: el usuario se arrepintió → le devolvemos sus favoritos
-  if (undoData) { store.set(undoData); salirDeUndo(); render(); return; }
+  if (undoData) { store.set(undoData); FAVS = undoData; salirDeUndo(); renderTabs(); render(); return; }
 
   const previos = store.get();
   const n = Object.keys(previos).length;
@@ -914,6 +1072,9 @@ document.getElementById("tally-btn").addEventListener("click", () => {
 
   undoData = previos;
   store.set({});
+  FAVS = {};
+  if (SOLO_FAVS) setVistaFavs(false); // si no, te dejaría mirando una lista vacía
+  renderTabs();
   render();
 
   const t = document.getElementById("tally");
